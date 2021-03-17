@@ -1,8 +1,9 @@
 const SocketIO = require('socket.io');
+const {getClaims} = require('./fhir-service');
 
 const {trigger, reply, alternative, coronavirus} = require('./data');
 
-function proccessMessage(input) {
+async function proccessMessage(input) {
     let output;
   
     //Transforms whatever the user inputs to lowercase and remove all chars except word characters, space, and digits
@@ -15,19 +16,30 @@ function proccessMessage(input) {
       .replace(/i feel /g, "")
       .replace(/whats/g, "what is")
       .replace(/please /g, "")
-      .replace(/ please/g, "");
+      .replace(/ please/g, "")
+      .replace(/show /g, "")
+      .replace(/my /g, "");
   
-    // Searches for an exact match with the 'trigger' array, if there are none, it goes will check if message contains 'coronavirus,' and if not - random alternative
-    const match = compare(trigger, reply, text)
-    if (match) {
-      output = match;
-    } else if (text.match(/coronavirus/gi)) {
-      output = coronavirus[Math.floor(Math.random() * coronavirus.length)];
+    if (text.indexOf("claims") >= 0) {
+      const res = await getClaims("DaisyBarnes");
+      if (res) {
+        output = res;
+      } else {
+        output = alternative[Math.floor(Math.random() * alternative.length)];
+      }
     } else {
-      output = alternative[Math.floor(Math.random() * alternative.length)];
+      // Searches for an exact match with the 'trigger' array, if there are none, random alternative
+      const match = compare(trigger, reply, text)
+      if (match) {
+        output = match;
+      } else if (text.match(/coronavirus/gi)) {
+        output = coronavirus[Math.floor(Math.random() * coronavirus.length)];
+      } else {
+        output = alternative[Math.floor(Math.random() * alternative.length)];
+      }
     }
     return output
- }
+  }
   
   function compare(triggerArray, replyArray, string) {
     let item;
@@ -45,8 +57,8 @@ function proccessMessage(input) {
 function setSocketInstance (server) {
 const io = SocketIO(server);
   io.on('connection', (socket) => {
-      socket.on('message', (data) => {
-        const output = proccessMessage(data.message);
+      socket.on('message', async (data) => {
+        const output = await proccessMessage(data.message);
         const replyData = {
             outputMessage : output
         }
