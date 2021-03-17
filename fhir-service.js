@@ -13,8 +13,7 @@ const getClaims = async (patientId) => {
             }
         );
         console.log(response.status);
-        //return JSON.stringify(response);
-        return patientId;    
+        return JSON.stringify(response);
     } catch (error) {
         console.log(error);
     }
