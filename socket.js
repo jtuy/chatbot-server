@@ -3,11 +3,11 @@ const {getClaims, getClaimDetails} = require('./fhir-service');
 
 const {trigger, reply, alternative, coronavirus} = require('./data');
 
-async function proccessMessage(input) {
+async function proccessMessage(patientId, message) {
     let output;
   
     //Transforms whatever the user inputs to lowercase and remove all chars except word characters, space, and digits
-    let text = input.toLowerCase().replace(/[^\w\s\d]/gi, "");
+    let text = message.toLowerCase().replace(/[^\w\s\d-]/gi, "");
   
     // For example 'tell me a story' becomes 'tell me story'
     // Or 'i feel happy' -> 'happy'
@@ -21,8 +21,13 @@ async function proccessMessage(input) {
       .replace(/with /g, "")
       .replace(/my /g, "");
   
+    if (!patientId) {
+      patientId = "DaisyBarnes";
+    }
+
     if (text.indexOf("claim details") >= 0) {
-      const res = await getClaimDetails("DaisyBarnes", "2019-04-04");
+      console.log(text);
+      const res = await getClaimDetails(patientId, text.match(/\d{4}-\d{1,2}-\d{1,2}/));
       if (res) {
         output = res;
       } else {
@@ -31,7 +36,7 @@ async function proccessMessage(input) {
     } else if (text.indexOf("claims provider") >= 0) {
 
     } else if (text.indexOf("claims") >= 0) {
-      const res = await getClaims("DaisyBarnes");
+      const res = await getClaims(patientId);
       if (res) {
         output = res;
       } else {
@@ -56,8 +61,7 @@ async function proccessMessage(input) {
     for (let x = 0; x < triggerArray.length; x++) {
       for (let y = 0; y < replyArray.length; y++) {
         if (triggerArray[x][y] == string) {
-          items = replyArray[x];
-          item = items[Math.floor(Math.random() * items.length)];
+          item = replyArray[x][Math.floor(Math.random() * items.length)];
         }
       }
     }
@@ -68,7 +72,7 @@ function setSocketInstance (server) {
 const io = SocketIO(server);
   io.on('connection', (socket) => {
       socket.on('message', async (data) => {
-        const output = await proccessMessage(data.message);
+        const output = await proccessMessage(data.patientId, data.message);
         const replyData = {
             outputMessage : output
         }
@@ -79,3 +83,4 @@ const io = SocketIO(server);
 };
 
 module.exports = { setSocketInstance };
+

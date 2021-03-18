@@ -1,14 +1,10 @@
 const axios = require('axios');
 const authString = "Basic " + Buffer.from("interop_pit:9U6S2MvAO1T78opNJYG2JVum29uIGvAOvxCJ").toString("base64");
 
-const services = {
-    1205: "Exam, emergency"
-}
-
 const getClaims = async (patientId) => {
     try {
         const response = await axios.get(
-            `https://dvh6ztzc-carin.interopland.com/better-health-insurance/fhir/Claim?patient=${patientId}&_sort=-created`, 
+            `https://dvh6ztzc-carin.interopland.com/better-health-insurance/fhir/ExplanationOfBenefit?patient=${patientId}&_sort=-created`,
             {
                 headers: {
                     Authorization: authString
@@ -34,7 +30,7 @@ const getClaims = async (patientId) => {
 function formatClaims(claims) {
     let claimList = "Here are your claims: "
     claims.forEach(claim => {
-        claimList = claimList + "Claim on " + claim.resource.created + ", ";
+        claimList = claimList + "\n- On " + claim.resource.created.match(/\d{4}-\d{2}-\d{2}/) + " with " + claim.resource.provider.display + ", ";
     });
     return claimList.slice(0, -2);
 }
@@ -42,7 +38,7 @@ function formatClaims(claims) {
 const getClaimDetails = async (patientId, createdDate) => {
     try {
         const response = await axios.get(
-            `https://dvh6ztzc-carin.interopland.com/better-health-insurance/fhir/Claim?patient=${patientId}&created=${createdDate}`, 
+            `https://dvh6ztzc-carin.interopland.com/better-health-insurance/fhir/ExplanationOfBenefit?patient=${patientId}&created=${createdDate}`, 
             {
                 headers: {
                     Authorization: authString
@@ -66,16 +62,20 @@ const getClaimDetails = async (patientId, createdDate) => {
 };
 
 function formatClaimDetails(claim) {
-    let claimDetails = "Here are your claim details: "
-    claimDetails = claimDetails + "Claim on " + claim.resource.created 
-        + " with " + claim.resource.provider.reference.replace("Organization/", "provider ");
+    let claimDetails = "Here are your claim details "
+    claimDetails = claimDetails + "on " + claim.resource.created.match(/\d{4}-\d{2}-\d{2}/) 
+        + " with provider " + claim.resource.provider.display;
     if (claim.resource.item) {
-        claimDetails = claimDetails + " for service(s): ";
+        claimDetails = claimDetails + " for product or service of ";
         claim.resource.item.forEach(item => {
-            claimDetails = claimDetails + services[item.productOrService.coding[0].code] + ", ";
+            claimDetails = claimDetails + item.productOrService.coding[0].display + ", ";
         });
+        claimDetails = claimDetails.slice(0, -2);
     }
-    return claimDetails.slice(0, -2);
+    claimDetails = claimDetails + "with \nBilled Amount of $" + claim.resource.total[0].amount.value
+        + "\nApproved Amount of $" + claim.resource.payment.amount.value;
+    return claimDetails;
 }
 
 module.exports = { getClaims, getClaimDetails };
+
