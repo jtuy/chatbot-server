@@ -66,14 +66,15 @@ function formatClaimDetails(claim) {
     claimDetails = claimDetails + "on " + claim.resource.created.match(/\d{4}-\d{2}-\d{2}/) 
         + " with provider " + claim.resource.provider.display;
     if (claim.resource.item) {
-        claimDetails = claimDetails + " for product or service of ";
+        claimDetails = claimDetails + " for ";
         claim.resource.item.forEach(item => {
             claimDetails = claimDetails + item.productOrService.coding[0].display + ", ";
         });
         claimDetails = claimDetails.slice(0, -2);
     }
-    claimDetails = claimDetails + "with \nBilled Amount of $" + claim.resource.total[0].amount.value
-        + "\nApproved Amount of $" + claim.resource.payment.amount.value;
+    claimDetails = claimDetails + " with... \nProvider billed amount of $" + claim.resource.total[0].amount.value + "."
+        + "\nAllowed amount of $" + claim.resource.payment.amount.value + "."
+        + "Amount you may owe of $" + (claim.resource.total[0].amount.value - claim.resource.payment.amount.value).toFixed(2) + ".";
     return claimDetails;
 }
 
