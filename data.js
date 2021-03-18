@@ -23,7 +23,8 @@ const trigger = [
     ["bye", "good bye", "goodbye", "see you later"],
     ["what should i eat today"],
     ["bro"],
-    ["what", "why", "how", "where", "when"]
+    ["what", "why", "how", "where", "when"],
+    ["this is the way"]
   ];
   
   // These are bot responses, paired in order with the above 'trigger' phrases
@@ -54,7 +55,8 @@ const trigger = [
     ["Bye", "Goodbye", "See you later"],
     ["Sushi", "Pizza"],
     ["Bro!"],
-    ["Yes?"]
+    ["Yes?"],
+    ["This is the way!"]
   ];
   
   // This is a small set of basically random 'catch alls' for anything that the user enters outside of the possible trigger phrases

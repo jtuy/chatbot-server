@@ -34,7 +34,7 @@ async function proccessMessage(patientId, message) {
         output = alternative[Math.floor(Math.random() * alternative.length)];
       }
     } else if (text.indexOf("claims provider") >= 0) {
-
+      output = "This feature is coming soon."
     } else if (text.indexOf("claims") >= 0) {
       const res = await getClaims(patientId);
       if (res) {
@@ -61,7 +61,8 @@ async function proccessMessage(patientId, message) {
     for (let x = 0; x < triggerArray.length; x++) {
       for (let y = 0; y < replyArray.length; y++) {
         if (triggerArray[x][y] == string) {
-          item = replyArray[x][Math.floor(Math.random() * items.length)];
+          let items = replyArray[x];
+          item = items[Math.floor(Math.random() * items.length)];
         }
       }
     }
