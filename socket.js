@@ -1,5 +1,5 @@
 const SocketIO = require('socket.io');
-const {getClaims} = require('./fhir-service');
+const {getClaims, getClaimDetails} = require('./fhir-service');
 
 const {trigger, reply, alternative, coronavirus} = require('./data');
 
@@ -17,10 +17,20 @@ async function proccessMessage(input) {
       .replace(/whats/g, "what is")
       .replace(/please /g, "")
       .replace(/ please/g, "")
-      .replace(/show /g, "")
+      .replace(/on /g, "")
+      .replace(/with /g, "")
       .replace(/my /g, "");
   
-    if (text.indexOf("claims") >= 0) {
+    if (text.indexOf("claim details") >= 0) {
+      const res = await getClaimDetails("DaisyBarnes", "2019-04-04");
+      if (res) {
+        output = res;
+      } else {
+        output = alternative[Math.floor(Math.random() * alternative.length)];
+      }
+    } else if (text.indexOf("claims provider") >= 0) {
+
+    } else if (text.indexOf("claims") >= 0) {
       const res = await getClaims("DaisyBarnes");
       if (res) {
         output = res;
